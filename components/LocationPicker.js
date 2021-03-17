@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button, ActivityIndicator, Alert, StyleSheet } from 'react-native';
 import * as Location from 'expo-location';
 import * as Permissions from 'expo-permissions';
@@ -9,6 +9,17 @@ import MapPreview from './MapPreview';
 const LocationPicker = props => {
 	const [isFetching, setIsFetching] = useState(false);
 	const [pickedLocation, setPickedLocation] = useState();
+
+	const mapPickedLocation = props.navigation.getParam('pickedLocation');
+
+	const { onLocationPicked } = props;
+
+	useEffect(() => {
+		if (mapPickedLocation) {
+			setPickedLocation(mapPickedLocation);
+			onLocationPicked(mapPickedLocation);
+		}
+	}, [mapPickedLocation, onLocationPicked]);
 
 	// second file this is being used.. should generalize
 	const verifyPermissions = async () => {
@@ -33,6 +44,10 @@ const LocationPicker = props => {
 			setIsFetching(true);
 			const location = await Location.getCurrentPositionAsync({ timeout: 5000 });	// 5 seconds
 			setPickedLocation({
+				lat: location.coords.latitude,
+				lng: location.coords.longitude
+			});
+			props.onLocationPicked({
 				lat: location.coords.latitude,
 				lng: location.coords.longitude
 			});
